@@ -1,23 +1,39 @@
-import logo from './logo.svg';
+import { useMemo, useState, useTransition } from 'react';
 import './App.css';
+import dataList from './data.json'
 
 function App() {
+  const [text, setText] = useState('')
+  const [filterText, setFilterText] = useState('')
+  const [isPending, startTransition] = useTransition()
+
+  const data = useMemo(() => {
+    return dataList.map((student) => {
+      const index = student.indexOf(filterText);
+      return index === -1 ? (
+        <p>{student}</p>
+      ) : (
+        <p>
+          {student.slice(0, index)}
+          <span style={{backgroundColor: 'yellow'}}>{student.slice(index, index + filterText.length)}</span>
+          {student.slice(index + filterText.length)}
+        </p>
+      )
+    })
+  }, [filterText])
+
+  const handleSearch = (e) => {
+    setText(e.target.value)
+
+    startTransition(() => {
+      setFilterText(e.target.value)
+    })
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <input type="text" value={text} onChange={handleSearch} />
+      {isPending ? <p>Loading...</p> : data.map(student => <p>{student}</p>)}
     </div>
   );
 }
